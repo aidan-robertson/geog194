@@ -1,0 +1,59 @@
+---
+title: "plant stuff"
+format: html
+editor: visual
+---
+
+```{r}
+#| message: false
+# general use
+library(tidyverse)
+library(readxl)
+library(here)
+library(janitor)
+
+# visualizing pairs
+library(GGally)
+
+# model selection
+library(MuMIn)
+
+# model predictions
+library(ggeffects)
+
+# model tables
+library(gtsummary)
+library(flextable)
+library(modelsummary)
+```
+
+```{r}
+plantstuff <- read_xlsx(path = here( "csm data.xlsx"),
+sheet = "all records") %>% 
+  clean_names %>% 
+  pivot_longer(cols = c(native_status)) %>% 
+  mutate(pre_postflow = case_when(
+    pre_postflow == "pre-flow" ~ "Pre-Flow",
+    pre_postflow == "post-flow" ~ "Post-Flow"),
+    value = case_when(
+      value == "native" ~ "Native",
+      value == "rare" ~ "Rare",
+      value == "invasive" ~ "Invasive",
+      value == "non-native" ~ "Non-Native")) %>% 
+  mutate(value = fct_relevel(value, "Non-Native", "Invasive", "Rare", "Native"),
+         pre_postflow = fct_relevel(pre_postflow, "Pre-Flow", "Post-Flow"))
+
+```
+
+```{r}
+ggplot(data = plantstuff,
+       aes(x = pre_postflow,
+           fill = value)) +
+  geom_bar() +
+  theme_minimal() +
+  scale_fill_manual(values = c("#ff9913", "#c61a09", "#5097a4", "#8ac926")) +
+  labs(x = "Relation to Montecito Debris Flow",
+       y = "Count of Plants",
+       fill = "Vegetation Type")
+```
+
